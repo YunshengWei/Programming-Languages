@@ -72,11 +72,43 @@ fun card_value(c) =
 fun remove_card(cs, c, e) =
     case cs of
         [] => raise e
-      | c':cs' => if c'=c then cs' else c'::remove_card(cs')
+      | c'::cs' => if c'=c then cs' else c'::remove_card(cs', c, e)
 
-fun all_
+fun all_same_color(cs) =
+    case cs of
+        [] => true
+      | c::[] => true
+      | c::c'::cs' => card_color(c)=card_color(c') andalso all_same_color(c'::cs')
 
+fun sum_cards(cs) =
+    let fun aux(cs, acc) =
+        case cs of
+            [] => acc
+          | c::cs' => aux(cs', card_value(c) + acc)
+    in
+        aux(cs, 0)
+    end
 
+fun score(cs, goal) =
+    let val s =  sum_cards(cs)
+        val ps = if s > goal then 3 * (s - goal) else goal - s
+    in
+        if all_same_color(cs) then ps div 2 else ps
+    end
+
+fun officiate(cl, ml, goal) =
+    let fun aux(cl, hl, ml, s) =
+        if s > goal
+        then score(hl, goal)
+        else case ml of
+            [] => score(hl, goal)
+          | Draw::ml' => (case cl of
+                [] => score(hl, goal)
+              | c::cl' => aux(cl', c::hl, ml', s + card_value(c)))
+          | (Discard c)::ml' => aux(cl, remove_card(hl, c, IllegalMove), ml', s - card_value(c))
+    in
+        aux(cl, [], ml, 0)
+    end
 
 
 
