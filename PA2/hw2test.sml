@@ -48,5 +48,7 @@ val test13 = ((officiate([(Clubs,Jack),(Spades,Num(8))],
                          42);
                false) 
               handle IllegalMove => true)
-             
+
+val test14 = careful_player([(Spades,Num 7),(Hearts,Num(2)),(Hearts,Num(3)),(Diamonds,Num 2)], 10) 
+             = [Draw,Draw,Discard (Hearts,Num 2),Draw];
              

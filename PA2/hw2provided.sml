@@ -143,7 +143,28 @@ fun officiate_challenge(cl, ml, goal) =
         aux(cl, [], ml, 0)
     end
 
-fun careful_player(cs, goal) =
-    let fun aux() =
+fun careful_player(card_list, goal) =
+    let fun can_discard(left, right) =
+        case right of
+            [] => NONE
+          | c::right' => if score(left@right', goal) = 0
+                then SOME c
+                else can_discard(c::left, right')
+        fun aux(card_list, held_list, sum) =
+            if score(held_list, goal) = 0
+            then []
+            else
+                case card_list of
+                    [] => (if goal > sum + 10
+                        then [Draw]
+                        else case can_discard([], held_list) of
+                            NONE => [Draw]
+                          | SOME c => [(Discard c)])
+                  | c::cl => (if goal > sum + 10
+                        then Draw::aux(cl, c::held_list, sum+card_value(c))
+                        else case can_discard([c], held_list) of
+                            NONE => Draw ::aux(cl, c::held_list, sum+card_value(c))
+                          | SOME c => [(Discard c), Draw])
     in
+        aux(card_list, [], 0)
     end
