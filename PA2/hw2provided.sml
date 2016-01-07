@@ -110,6 +110,40 @@ fun officiate(cl, ml, goal) =
         aux(cl, [], ml, 0)
     end
 
+fun score_challenge(cs, goal) =
+    let val all_same_color = all_same_color(cs)
+        val num_aces = List.length(List.filter (fn (s, r) => r = Ace) cs)
+        fun least_score(num_aces, sum) =
+            if sum > goal
+            then if num_aces = 0
+                then 3 * (sum - goal)
+                else Int.min(3 * (sum - goal), least_score(num_aces - 1, sum - 10))
+            else goal - sum
+        val ls = least_score(num_aces, sum_cards(cs))
+    in
+        if all_same_color then ls div 2 else ls
+    end
 
+fun officiate_challenge(cl, ml, goal) =
+    let fun card_value2(c) =
+        case c of
+            (_, Num v) => v
+          | (_, Ace) => 1
+          | _ => 10
+        fun aux(cl, hl, ml, s) =
+        if s > goal
+        then score_challenge(hl, goal)
+        else case ml of
+            [] => score_challenge(hl, goal)
+          | Draw::ml' => (case cl of
+                [] => score_challenge(hl, goal)
+              | c::cl' => aux(cl', c::hl, ml', s + card_value2(c)))
+          | (Discard c)::ml' => aux(cl, remove_card(hl, c, IllegalMove), ml', s - card_value(c))
+    in
+        aux(cl, [], ml, 0)
+    end
 
-
+fun careful_player(cs, goal) =
+    let fun aux() =
+    in
+    end
