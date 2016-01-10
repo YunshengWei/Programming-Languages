@@ -35,6 +35,7 @@ datatype typ = Anything
 	     | Datatype of string
 
 (**** you can put all your code here ****)
+(* problem 1 *)
 val only_capitals = List.filter (fn s => Char.isUpper(String.sub(s, 0)))
 
 val longest_string1 = List.foldl (fn (s1, s2) => if String.size(s1) > String.size(s2) then s1 else s2) ""
@@ -53,16 +54,64 @@ val longest_capitalized = longest_string1 o only_capitals
 
 val rev_string = String.implode o List.rev o String.explode
 
+(* problem 2 *)
+fun first_answer f xs =
+    case xs of
+        [] => raise NoAnswer
+      | x::xs' => (case f(x) of
+            NONE => first_answer f xs'
+          | SOME v => v)
 
+fun all_answers f xs =
+    let fun aux(xs, acc) =
+        case xs of
+            [] => SOME acc
+          | x::xs' => case f(x) of
+                NONE => NONE
+              | SOME v => aux(xs', acc @ v)
+    in
+        aux(xs, [])
+    end
 
+val count_wildcards = g (fn x => 1) (fn x => 0)
 
+val count_wild_and_variable_lengths = g (fn x => 1) String.size
 
+fun count_some_var(s, p)=
+    g (fn x => 0)  (fn x => if x = s then 1 else 0) p
 
+fun check_pat(p) =
+    let fun get_all_variables(p) =
+        case p of
+            Variable x => [x]
+          | TupleP ps => List.foldl (fn (p, l) => get_all_variables(p) @ l) [] ps
+          | ConstructorP(_, p) => get_all_variables(p)
+          | _ => []
+        fun has_repeats(xs) =
+        case xs of
+            [] => false
+          | x::xs' => List.exists (fn x' => x = x') xs' orelse has_repeats(xs')
+    in
+        not (has_repeats(get_all_variables(p)))
+    end
 
+fun match(v, p) =
+    case (p, v) of
+        (Wildcard, _) => SOME []
+      | (Variable s, v) => SOME [(s, v)]
+      | (UnitP, Unit) => SOME []
+      | (ConstP i, Const i') => SOME []
+      | (TupleP ps, Tuple vs) => 
+            if List.length ps <> List.length vs
+            then NONE
+            else all_answers match (ListPair.zip(vs, ps))
+      | (ConstructorP (s, p), Constructor (s', v)) =>
+            if s = s' then match(v, p) else NONE
+      | _ => NONE
 
-
-
-
+fun first_match v ps =
+    SOME (first_answer (fn p => match (v, p)) ps)
+    handle NoAnswer => NONE
 
 
 
