@@ -33,3 +33,34 @@ val test11 = match (Const(1), UnitP) = NONE
 
 val test12 = first_match Unit [UnitP] = SOME []
 
+val test13a = typecheck_patterns([("foo1","bar1",Datatype "bar2"),("foo2","bar2",UnitT)],
+                                  [ConstructorP("foo1", Variable "x")]) = SOME (Datatype "bar1");
+
+val test13g = typecheck_patterns([("foo1","bar1",Datatype "bar2"),("foo2","bar2",UnitT)],
+                                  [ConstructorP("foo1", ConstructorP ("foo2", UnitP))]) = SOME (Datatype "bar1");
+
+val test13h = typecheck_patterns([("foo1","bar1",Datatype "bar2"),("foo2","bar2",UnitT)],
+                                  [ConstructorP("foo1", ConstructorP ("foo2", ConstP 1))]) = NONE;
+
+val test13i = typecheck_patterns([("foo1","bar1",Datatype "bar2"),("foo2","bar2",UnitT)],
+                                  [ConstructorP("foo1", ConstructorP ("foo2", Wildcard))]) = SOME (Datatype "bar1");
+
+val test13b = typecheck_patterns([("foo1","bar1",IntT),("foo2","bar2",UnitT)],
+                              [ConstructorP("foo1", ConstP 1),
+                               ConstructorP("foo2",UnitP)])
+           = NONE;
+
+val test13c = typecheck_patterns([("foo1","bar1",IntT),("foo2","bar2",UnitT)],
+                   [ConstructorP("foo1", ConstP 1), ConstructorP("foo2",UnitP)]) = NONE;
+
+val test13d = typecheck_patterns([],
+        [TupleP [Variable("x"), Variable("y")], TupleP [Wildcard, Wildcard]])
+        = SOME (TupleT [Anything, Anything])
+
+val test13e = typecheck_patterns([],
+        [TupleP [Wildcard, Wildcard], TupleP [Wildcard, TupleP [Wildcard, Wildcard]]])
+        = SOME (TupleT [Anything, TupleT [Anything, Anything]])
+
+val test13f = typecheck_patterns([("foo1","bar1",IntT),("foo2","bar2",UnitT)],
+                              [ConstructorP("foo3", ConstP 1)])
+           = NONE;

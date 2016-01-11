@@ -113,5 +113,56 @@ fun first_match v ps =
     SOME (first_answer (fn p => match (v, p)) ps)
     handle NoAnswer => NONE
 
+(* Challenge Problems *)
+fun typecheck_patterns(sstl, pl) =
+    let 
+        fun f s =
+            List.find (fn (x, _, _) => x = s) sstl
+        (* if pattern p and type t match, return SOME lowest common anster, else NONE *)
+        fun match (p, t) =
+            case p of
+                Wildcard => SOME t
+              | Variable _ => SOME t
+              | UnitP => if t = Anything orelse t = UnitT then SOME UnitT else NONE
+              | ConstP _ => if t = Anything orelse t = IntT then SOME IntT else NONE
+              | TupleP ps => (case t of
+                    TupleT ts => if List.length ps <> List.length ts
+                        then NONE
+                        else (case (all_answers (fn x => case (match x) of
+                            NONE => NONE
+                          | SOME t => SOME [t]) (ListPair.zip (ps, ts))) of
+                            NONE => NONE
+                          | SOME ts' => SOME (TupleT ts'))
+                  | Anything => (case (all_answers (fn x => case (match x) of
+                            NONE => NONE
+                          | SOME t => SOME [t]) (List.map (fn x => (x, Anything)) ps)) of
+                        NONE => NONE
+                      | SOME ts' => SOME (TupleT ts'))
+                  | _ => NONE)
+              | ConstructorP (s, p) => case f s of
+                    NONE => NONE
+                  | SOME (_, x, t') => (case match(p, t') of
+                        NONE => NONE
+                      | SOME _ => (case t of
+                            Datatype x' => if x = x' then SOME (Datatype x) else NONE
+                          | Anything => SOME (Datatype x)
+                          | _ => NONE))
+        fun g (pl, lca) =
+            case pl of
+                [] => SOME lca
+              | p::pl' => (case match (p, lca) of
+                    NONE => NONE
+                  | SOME t => g (pl', t))
+    in
+        g(pl, Anything)
+    end
+
+
+
+
+
+
+
+
 
 
