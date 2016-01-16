@@ -73,4 +73,13 @@
                                               new-pos)))
                               ans2)))))])
     f))
-                
+
+(define-syntax while-less
+  (syntax-rules (do)
+    [(while-less e1 do e2)
+     (let ([e1-ans e1])
+       (letrec ([f (lambda ()
+                   (if (< e2 e1-ans)
+                       (f)
+                       #t))])
+         (f)))]))
