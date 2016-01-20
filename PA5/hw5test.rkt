@@ -52,8 +52,32 @@
    (eval-exp (call (call mupl-mapAddN (int 7))
                    (racketlist->mupllist 
                     (list (int 3) (int 4) (int 9)))))) (list (int 10) (int 11) (int 16)) "combined test")
-   
-   ))
+
+   ;; challenge problem tests
+   (check-equal? (fun-challenge-freevars
+                  (compute-free-vars (fun #f "_" (add (add (var "x") (var "y")) (var "z")))))
+                 (set "x" "y" "z"))
+   (check-equal? (fun-challenge-freevars
+                  (compute-free-vars (fun #f "x" (add (add (var "x") (var "y")) (var "z")))))
+                 (set "y" "z"))
+   (check-equal? (fun-challenge-freevars
+                  (compute-free-vars (fun #f "x" (ifgreater (var "x") (aunit) (var "y") (var "z")))))
+                 (set "y" "z"))
+   (check-equal? (fun-challenge-freevars
+                  (compute-free-vars (fun #f "x"
+                                          (mlet "y" (int 0) (add (add (var "x") (var "y")) (var "z"))))))
+                 (set "z"))
+   (check-equal? (fun-challenge-freevars
+                  (compute-free-vars (fun #f "x" (fun #f "y" (fun #f "z"
+                                                                  (add (add (var "x") (var "y")) (var "z")))))))
+                 (set))
+   (check-equal? (fun-challenge-freevars
+                  (compute-free-vars (fun #f "x" 
+                                          (add (var "y")
+                                               (mlet "y" (var "z") (add (var "y") (var "y")))))))
+                 (set "y" "z")))
+  
+  )
 
 (require rackunit/text-ui)
 ;; runs the test
