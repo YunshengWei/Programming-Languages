@@ -219,4 +219,7 @@ fun preprocess_prog (e) =
     else if y1 < y2
     then LineSegment (x1, y1, x2, y2)
     else LineSegment (x2, y2, x1, y1)
+      | Intersect (e1, e2) => Intersect (preprocess_prog e1, preprocess_prog e2)
+      | Let (s, e1, e2) => Let (s, preprocess_prog e1, preprocess_prog e2)
+      | Shift (dx, dy, e1) => Shift (dx, dy, preprocess_prog e1)
       | _ => e
